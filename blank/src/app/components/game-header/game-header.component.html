@@ -1,23 +1,23 @@
 <div class="main-player__header">
-  <div class="main-player__description">
+  <div class="main-player__description" [ngClass]="{active: player === 1}">
     <ion-item>
       <ion-avatar slot="start">
         <img src="https://gravatar.com/avatar/dba6bae8c566f9d4041fb9cd9ada7741?d=identicon&f=y">
       </ion-avatar>
       <ion-label>
         <h3>Player 1</h3>
-        <p>1</p>
+        <p>0</p>
       </ion-label>
     </ion-item>
   </div>
-  <div class="main-player__description">
+  <div class="main-player__description" [ngClass]="{active: player === 2}">
     <ion-item>
       <ion-avatar slot="end">
         <img src="https://gravatar.com/avatar/dba6bae8c566f9d4041fb9cd9ada7741?d=identicon&f=y">
       </ion-avatar>
       <ion-label>
         <h3>Player 2</h3>
-        <p>1</p>
+        <p>0</p>
       </ion-label>
     </ion-item>
   </div>

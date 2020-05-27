@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { PLAYER } from 'src/app/util/playerEnum';
 
 @Component({
   selector: 'app-game-header',
@@ -6,6 +7,9 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./game-header.component.scss'],
 })
 export class GameHeaderComponent implements OnInit {
+
+  @Input('player')
+  public player: PLAYER;
 
   constructor() { }
 

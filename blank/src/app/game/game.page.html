@@ -14,7 +14,7 @@
   </ion-header>
 
   <div id="main">
-    <app-game-header></app-game-header>
+    <app-game-header [player]="player"></app-game-header>
     <table class="hash-game-table">
       <tr class="linha">
         <td class="coluna" #space1 (click)="validarJogo('space1')">
