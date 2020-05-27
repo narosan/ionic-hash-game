@@ -1,0 +1,73 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "~@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "~@ionic/angular/css/normalize.css";
+@import "~@ionic/angular/css/structure.css";
+@import "~@ionic/angular/css/typography.css";
+@import '~@ionic/angular/css/display.css';
+
+/* Optional CSS utils that can be commented out */
+@import "~@ionic/angular/css/padding.css";
+@import "~@ionic/angular/css/float-elements.css";
+@import "~@ionic/angular/css/text-alignment.css";
+@import "~@ionic/angular/css/text-transformation.css";
+@import "~@ionic/angular/css/flex-utils.css";
+
+#main {
+    position: relative;
+    height: 100%;
+    .main-player__header {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        padding: 20px 10px;
+        .main-player__description {
+
+        }
+    }
+    .hash-game-table {
+        width: 90%;
+        height: 80%;
+        margin: auto;
+        .linha {
+            border-bottom: 1px solid #fff;
+            &:last-child { border: none; }
+            .coluna {
+                width: 33.33%;
+                border-right: 1px solid #fff;
+                &:last-child { border: none; }
+                .circulo {
+                    width: 80%;
+                    height: 65%;
+                    margin: auto;
+                    background-color: #fff;
+                    border-radius: 50%;
+                }
+                .x {
+                    width: 80%;
+                    transform: rotate(45deg);
+                    margin: auto;
+                    border: 1px #fff solid;
+                    &:after {
+                        transform: rotate(-45deg);
+                    }
+                    &:before {
+                        transform: rotate(-45deg);
+                    }
+                }
+            }
+        }
+    }
+}
