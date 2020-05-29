@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { GamePageRoutingModule } from './game-routing.module';
+import { HttpClientModule } from '@angular/common/http';
 
 import { GamePage } from './game.page';
 import { ComponentsModule } from '../components/components.module';
@@ -15,7 +16,8 @@ import { ComponentsModule } from '../components/components.module';
     FormsModule,
     IonicModule,
     GamePageRoutingModule,
-    ComponentsModule
+    ComponentsModule,
+    HttpClientModule
   ],
   declarations: [GamePage]
 })

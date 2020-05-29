@@ -1,10 +1,17 @@
-import { Component, ViewChildren, ElementRef, OnInit } from '@angular/core';
+import { Component, ViewChildren, ElementRef, OnInit, Renderer2 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import * as socket from "socket.io";
 import { map } from "rxjs/operators";
 import { PLAYER } from "../util/playerEnum";
 import { ToastController } from '@ionic/angular';
+
+import io from 'socket.io-client';
+
+import { environment } from 'src/environments/environment';
+
+import { HttpClient } from '@angular/common/http';
+
+const ENV = environment;
 
 const jogadasVitoria = [
   [1, 2, 3], // Jogadas na vertical
@@ -46,12 +53,17 @@ export class GamePage implements OnInit {
   protected space9: ElementRef;
 
   protected jogoFinalizado: boolean = false;
+  protected gameId: string;
+  protected socket;
+  protected meuTurno: boolean;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private cookieService: CookieService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private http: HttpClient,
+    private renderer2: Renderer2
   ) { }
 
   protected player: PLAYER;
@@ -59,33 +71,38 @@ export class GamePage implements OnInit {
   ngOnInit(): void {
     this.validarPlayer();
   }
-  
+
   validarJogo(space: string): void {
     if (this.jogoFinalizado) return;
-    if (this.espacoDisponivel(this[space])) {
-      this.realizarJogada(this[space]);
-      this.emitirJogada();
+    if (this.espacoDisponivel(this[space]) && this.meuTurno) {
+      this.realizarJogada(this[space], this.player);
+      this.emitirJogada(space);
       this.verificaStatusJogo();
+      this.meuTurno = false;
     } else return;
   }
 
-  private realizarJogada(element): void {
-    if (this.player === PLAYER.ONE) {
+  private realizarJogada(element, player): void {
+    
+    if (player === PLAYER.ONE) {
       element.first.nativeElement.children[0].classList.add('circulo');
     } else {
       element.first.nativeElement.children[0].classList.add('x');
+      const child = document.createElement('div');
+      child.classList.add('x');
+      this.renderer2.appendChild(element.first.nativeElement, child);
     }
   }
 
-  private emitirJogada(): void {
-    console.log('call socket.io');
+  private emitirJogada(space: string): void {
+    this.socket.emit('play_game', {gameId: this.gameId, data: {space, player:this.player}});
   }
 
-  private verificaStatusJogo(): void {
+  private verificaStatusJogo(player?): void {
     for(const tipo of ['circulo', 'x']) {
       for (const jogada of jogadasVitoria) {
         if (this.verificaVitoria(jogada, tipo)) {
-          this.endGame();
+          this.endGame(player);
           break;
         }
       }
@@ -102,14 +119,14 @@ export class GamePage implements OnInit {
     return element.first.nativeElement.children[0].classList.length === 0;
   }
 
-  private async endGame() {
+  private async endGame(player?) {
     this.jogoFinalizado = true;
     const toast = this.toastCtrl.create({
       animated: true,
-      color: 'success',
+      color: player ? 'danger' : 'success',
       duration: 10000,
       position: 'bottom',
-      message: 'Parabéns você foi campeão do game!'
+      message: player ? 'Mais sorte na próxima vez' :'Parabéns você foi campeão do jogo!'
     });
     (await toast).present();
   }
@@ -118,9 +135,23 @@ export class GamePage implements OnInit {
     this.route.params
     .pipe(map(param => param.id))
     .subscribe(
-      (userGameId: string) => 
-        this.player = userGameId == this.cookieService.get('token') ? PLAYER.ONE : PLAYER.TWO 
+      (userGameId: string) => {
+        this.player = userGameId == this.cookieService.get('token') ? PLAYER.ONE : PLAYER.TWO;
+        this.meuTurno = this.player === PLAYER.ONE;
+        this.gameId = userGameId;
+        this.connectSocketIo(userGameId);
+      }
     );
+  }
+
+  private connectSocketIo(gameId) {
+    this.socket = io(ENV.socketUrl, { transports: ['websocket'] });
+    this.socket.emit('join_game', gameId);
+    this.socket.on('next_play', ({space, player}) => {
+      this.realizarJogada(this[space], player);
+      this.verificaStatusJogo(player);
+      this.meuTurno = true;
+    });
   }
 
 }

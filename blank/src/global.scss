@@ -54,20 +54,18 @@
                     width: 80%;
                     height: 65%;
                     margin: auto;
-                    background-color: #fff;
+                    // background-color: #fff;
                     border-radius: 50%;
+                    border: 1px solid #fff;
                 }
                 .x {
+                    &:last-child {
+                        transform: rotate(-45deg);    
+                    }
                     width: 80%;
-                    transform: rotate(45deg);
                     margin: auto;
                     border: 1px #fff solid;
-                    &:after {
-                        transform: rotate(-45deg);
-                    }
-                    &:before {
-                        transform: rotate(-45deg);
-                    }
+                    transform: rotate(45deg);
                 }
             }
         }
