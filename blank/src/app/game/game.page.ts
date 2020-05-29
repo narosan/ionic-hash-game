@@ -57,6 +57,12 @@ export class GamePage implements OnInit {
   protected socket;
   protected meuTurno: boolean;
 
+  
+  public get title() : string {
+    return `gameId: ${this.gameId}`;
+  }
+  
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
