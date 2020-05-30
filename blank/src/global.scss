@@ -70,3 +70,36 @@
         }
     }
 }
+
+.hash__home-content {
+    display: flex;
+    justify-content: space-around;
+    height: 100%;
+    padding: 20px;
+    justify-items: center;
+    flex-direction: column;
+    overflow-y: hidden;
+    .hash__home-items {
+        width: 80%;
+        height: 30%;
+        display: flex;
+        margin: auto;
+        justify-content: space-around;
+        justify-items: center;
+        flex-direction: column;
+        border: 1px solid #fff;
+        border-radius: 5px;
+        .hash__home-item {
+            margin: 0 auto;
+            ion-icon {
+                font-size: 135px;
+            }
+        }
+        p {
+            font-size: x-large;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 600;
+            text-align: center;
+        }
+    }
+}

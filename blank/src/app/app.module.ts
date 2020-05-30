@@ -10,6 +10,7 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 
 import { CookieService } from "ngx-cookie-service";
+import { CommunicationService } from './shared/communication.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -19,6 +20,7 @@ import { CookieService } from "ngx-cookie-service";
     StatusBar,
     SplashScreen,
     CookieService,
+    CommunicationService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

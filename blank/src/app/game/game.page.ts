@@ -1,15 +1,13 @@
-import { Component, ViewChildren, ElementRef, OnInit, Renderer2 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, ViewChildren, ElementRef, OnInit, Renderer2, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { map } from "rxjs/operators";
+import { map, switchMap, filter } from "rxjs/operators";
 import { PLAYER } from "../util/playerEnum";
-import { ToastController } from '@ionic/angular';
-
+import { ToastController, NavController } from '@ionic/angular';
 import io from 'socket.io-client';
-
 import { environment } from 'src/environments/environment';
-
-import { HttpClient } from '@angular/common/http';
+import { CommunicationService } from '../shared/communication.service';
+import { Subscription } from 'rxjs';
 
 const ENV = environment;
 
@@ -17,7 +15,7 @@ const jogadasVitoria = [
   [1, 2, 3], // Jogadas na vertical
   [4, 5, 6], // Jogadas na vertical
   [7, 8, 9], // Jogadas na vertical
-  
+
   [1, 4, 7], // Jogadas na horizontal
   [2, 5, 8], // Jogadas na horizontal
   [3, 6, 9], // Jogadas na horizontal
@@ -31,7 +29,7 @@ const jogadasVitoria = [
   templateUrl: './game.page.html',
   styleUrls: ['./game.page.scss'],
 })
-export class GamePage implements OnInit {
+export class GamePage implements OnInit, OnDestroy {
 
   @ViewChildren('space1')
   protected space1: ElementRef;
@@ -56,26 +54,32 @@ export class GamePage implements OnInit {
   protected gameId: string;
   protected socket;
   protected meuTurno: boolean;
+  protected subscription: Subscription = new Subscription();
 
-  
-  public get title() : string {
+  public get title(): string {
     return `gameId: ${this.gameId}`;
   }
-  
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private cookieService: CookieService,
     private toastCtrl: ToastController,
-    private http: HttpClient,
-    private renderer2: Renderer2
+    private renderer2: Renderer2,
+    private navCtrl: NavController,
+    private communicationService: CommunicationService
   ) { }
 
   protected player: PLAYER;
-  
+
   ngOnInit(): void {
     this.validarPlayer();
+    this.subscriptions();
+  }
+
+  ngOnDestroy(): void {
+    if (!this.subscription.closed) {
+      this.subscription.unsubscribe();
+    }
   }
 
   validarJogo(space: string): void {
@@ -89,7 +93,7 @@ export class GamePage implements OnInit {
   }
 
   private realizarJogada(element, player): void {
-    
+
     if (player === PLAYER.ONE) {
       element.first.nativeElement.children[0].classList.add('circulo');
     } else {
@@ -101,11 +105,11 @@ export class GamePage implements OnInit {
   }
 
   private emitirJogada(space: string): void {
-    this.socket.emit('play_game', {gameId: this.gameId, data: {space, player:this.player}});
+    this.socket.emit('play_game', { gameId: this.gameId, data: { space, player: this.player } });
   }
 
   private verificaStatusJogo(player?): void {
-    for(const tipo of ['circulo', 'x']) {
+    for (const tipo of ['circulo', 'x']) {
       for (const jogada of jogadasVitoria) {
         if (this.verificaVitoria(jogada, tipo)) {
           this.endGame(player);
@@ -116,9 +120,9 @@ export class GamePage implements OnInit {
   }
 
   private verificaVitoria(jogada: number[], tipo: string): boolean {
-    return  this[`space${jogada[0]}`].first.nativeElement.children[0].classList.value === tipo &&
-            this[`space${jogada[1]}`].first.nativeElement.children[0].classList.value === tipo &&
-            this[`space${jogada[2]}`].first.nativeElement.children[0].classList.value === tipo;
+    return this[`space${jogada[0]}`].first.nativeElement.children[0].classList.value === tipo &&
+      this[`space${jogada[1]}`].first.nativeElement.children[0].classList.value === tipo &&
+      this[`space${jogada[2]}`].first.nativeElement.children[0].classList.value === tipo;
   }
 
   private espacoDisponivel(element): boolean {
@@ -132,32 +136,39 @@ export class GamePage implements OnInit {
       color: player ? 'danger' : 'success',
       duration: 10000,
       position: 'bottom',
-      message: player ? 'Mais sorte na próxima vez' :'Parabéns você foi campeão do jogo!'
+      message: player ? 'Mais sorte na próxima vez' : 'Parabéns você foi campeão do jogo!'
     });
     (await toast).present();
   }
 
   private validarPlayer(): void {
     this.route.params
-    .pipe(map(param => param.id))
-    .subscribe(
-      (userGameId: string) => {
-        this.player = userGameId == this.cookieService.get('token') ? PLAYER.ONE : PLAYER.TWO;
-        this.meuTurno = this.player === PLAYER.ONE;
-        this.gameId = userGameId;
-        this.connectSocketIo(userGameId);
-      }
-    );
+      .pipe(map(param => param.id))
+      .subscribe(
+        (userGameId: string) => {
+          this.player = userGameId == this.cookieService.get('token') ? PLAYER.ONE : PLAYER.TWO;
+          this.meuTurno = this.player === PLAYER.ONE;
+          this.gameId = userGameId;
+          this.connectSocketIo(userGameId);
+        }
+      );
   }
 
   private connectSocketIo(gameId) {
     this.socket = io(ENV.socketUrl, { transports: ['websocket'] });
     this.socket.emit('join_game', gameId);
-    this.socket.on('next_play', ({space, player}) => {
+    this.socket.on('next_play', ({ space, player }) => {
       this.realizarJogada(this[space], player);
       this.verificaStatusJogo(player);
       this.meuTurno = true;
     });
+  }
+
+  private subscriptions() {
+    this.subscription.add(
+      this.communicationService.leaveRoom$
+        .subscribe(() => this.navCtrl.pop())
+    );
   }
 
 }

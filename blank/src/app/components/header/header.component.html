@@ -3,7 +3,7 @@
     <ion-title>
       {{title}}
     </ion-title>
-    <ion-button slot="end" shape="round" fill="clear" color="medium" (click)="shareGameRoom()">
+    <ion-button *ngIf="exbirPopover" slot="end" shape="round" fill="clear" color="medium" (click)="shareGameRoom()">
         <ion-icon slot="icon-only" name="ellipsis-vertical-outline"></ion-icon>
     </ion-button>
   </ion-toolbar>

@@ -1,32 +1,37 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { SocialSharing } from '@ionic-native/social-sharing/ngx';
+import { Component, OnInit, Input, AfterContentChecked } from '@angular/core';
+import { PopoverController } from '@ionic/angular';
+import { ShareItensComponent } from '../share-itens/share-itens.component';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements AfterContentChecked {
 
   @Input('title')
   title: string;
 
+  exbirPopover: boolean;
+
   constructor(
-    private router: Router,
-    private socialSharing: SocialSharing
+    private popoverCtrl: PopoverController
   ) { }
 
-  ngOnInit() {}
+  ngAfterContentChecked(): void {
+    this.validaPopover();
+  }
 
-  shareGameRoom() {
-console.log(this.router.url);
-    // .subscribe(url => {
-    //   console.log('url', url);
-    //   this.socialSharing.share('Você está sendo desafiado para um Hash Game!', '', '', url.join())
-    //     .then()
-    //     .catch(err => console.error(err));
-    // });
+  async shareGameRoom() {
+    const popover = this.popoverCtrl.create({
+      component: ShareItensComponent
+    });
+
+    (await popover).present();
+  }
+
+  private validaPopover() {
+    this.exbirPopover = this.title.includes('game');
   }
 
 }
