@@ -39,12 +39,16 @@ class App {
         this.io = socketIo(this.server);
         this.io.on('connection', (socket) => {
             socket.on('join_game', (gameId) => {
-                console.log('join_game', gameId);
                 socket.join(gameId)
             });
             socket.on('play_game', ({gameId, data}) => {
-                console.log('game', gameId, data);
                 socket.in(gameId).emit('next_play', data)
+            });
+
+            socket.on('exist_room', gameId => {
+                console.log('socket.adapter.rooms[gameId]', socket.adapter.rooms[gameId]);
+                if (socket.adapter.rooms[gameId]) socket.emit('confirm_room', gameId);
+                else socket.emit('not_exist_room', gameId);
             });
         });
     }
